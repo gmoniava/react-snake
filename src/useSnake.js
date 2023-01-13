@@ -118,13 +118,11 @@ function useSnake({ initialBoardWidth, initialBoardHeight }) {
     }
 
     if (!isValidMove(newHead, snake)) {
-      // Snake hit the wall, or maybe itself.
       gameOver = true;
       return { head: currentHead, gameOver, newFood };
     }
 
     if (newHead.x === food.x && newHead.y === food.y) {
-      // If we get here, it means snake ate the food.
       newFood = newFoodCoordinates([newHead, ...snake]);
       newHead.key = uuidv4();
       return { head: [newHead, currentHead], gameOver, newFood };
@@ -210,7 +208,6 @@ function useSnake({ initialBoardWidth, initialBoardHeight }) {
           ));
           return head;
         } else {
-          // If snake died, or ate food in this round, we don't move the rest of the body
           if (gameOver || newFood) {
             return cell;
           }
@@ -242,7 +239,6 @@ function useSnake({ initialBoardWidth, initialBoardHeight }) {
 
   React.useEffect(() => {
     if (gameState.gameOver) {
-      // If game is over, no need to listen to key presses or to process them.
       stopProcessingDirections();
       document.removeEventListener("keydown", onKeyPress);
     }
