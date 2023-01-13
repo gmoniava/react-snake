@@ -149,6 +149,45 @@ function useSnake({
     };
   };
 
+  let reducer = (state, action) => {
+    if (state.gameOver && action.type !== "reset") {
+      return state;
+    }
+
+    if (action.type === "move") {
+      let gameOver, newFood, head;
+      let snake = state?.snake?.flatMap((cell, i) => {
+        if (i === 0) {
+          // We use this parenthesis for destructuring, since some variables below, were already declared
+          ({ head, gameOver, newFood } = moveHead(
+            action.payload,
+            state.snake,
+            state.food
+          ));
+          return head;
+        } else {
+          if (gameOver || newFood) {
+            return cell;
+          }
+          return {
+            ...cell,
+            x: state.snake[i - 1].x,
+            y: state.snake[i - 1].y,
+          };
+        }
+      });
+
+      return {
+        snake,
+        food: newFood ? newFood : state.food,
+        gameOver: gameOver,
+      };
+    } else if (action.type === "reset") {
+      return initialState(action.payload);
+    }
+    throw Error("Unknown action.", action);
+  };
+
   const [gameState, dispatch] = React.useReducer(
     reducer,
     undefined,
@@ -200,45 +239,6 @@ function useSnake({
       dispatch({ type: "move", payload: currentDirection });
     }, 100);
   }, []);
-
-  function reducer(state, action) {
-    if (state.gameOver && action.type !== "reset") {
-      return state;
-    }
-
-    if (action.type === "move") {
-      let gameOver, newFood, head;
-      let snake = state?.snake?.flatMap((cell, i) => {
-        if (i === 0) {
-          // We use this parenthesis for destructuring, since some variables below, were already declared
-          ({ head, gameOver, newFood } = moveHead(
-            action.payload,
-            state.snake,
-            state.food
-          ));
-          return head;
-        } else {
-          if (gameOver || newFood) {
-            return cell;
-          }
-          return {
-            ...cell,
-            x: state.snake[i - 1].x,
-            y: state.snake[i - 1].y,
-          };
-        }
-      });
-
-      return {
-        snake,
-        food: newFood ? newFood : state.food,
-        gameOver: gameOver,
-      };
-    } else if (action.type === "reset") {
-      return initialState(action.payload);
-    }
-    throw Error("Unknown action.", action);
-  }
 
   React.useEffect(() => {
     document.addEventListener("keydown", onKeyPress);
