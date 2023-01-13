@@ -9,8 +9,8 @@ export default function Snake({
   initialBoardHeight = 20,
 }) {
   let { gameState, reset } = useSnake({
-    initialBoardWidth: initialBoardWidth,
-    initialBoardHeight: initialBoardHeight,
+    initialBoardWidth: 25,
+    initialBoardHeight: 25,
   });
 
   return (

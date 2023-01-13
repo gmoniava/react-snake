@@ -20,7 +20,13 @@ let oppositeDirections = {
   [directions.DOWN]: directions.UP,
 };
 
-function useSnake({ initialBoardWidth, initialBoardHeight }) {
+function useSnake({
+  initialBoardWidth,
+  initialBoardHeight,
+  initialSnakeX = 0,
+  initialSnakeY = 0,
+  initialLength = 5,
+}) {
   let [boardWidth] = React.useState(initialBoardWidth);
   let [boardHeight] = React.useState(initialBoardHeight);
 
@@ -131,7 +137,11 @@ function useSnake({ initialBoardWidth, initialBoardHeight }) {
     return { head: newHead, gameOver, newFood };
   };
 
-  let initialState = ({ x = 0, y = 0, length = 5 } = {}) => {
+  let initialState = ({
+    x = initialSnakeX,
+    y = initialSnakeY,
+    length = initialLength,
+  } = {}) => {
     let newSnake = createSnakeHorizontally(x, y, length);
     return {
       snake: newSnake,
@@ -187,7 +197,7 @@ function useSnake({ initialBoardWidth, initialBoardHeight }) {
         currentDirection = directionsRef.current[0];
       }
 
-      dispatch({ type: "move", direction: currentDirection });
+      dispatch({ type: "move", payload: currentDirection });
     }, 100);
   }, []);
 
@@ -202,7 +212,7 @@ function useSnake({ initialBoardWidth, initialBoardHeight }) {
         if (i === 0) {
           // We use this parenthesis for destructuring, since some variables below, were already declared
           ({ head, gameOver, newFood } = moveHead(
-            action.direction,
+            action.payload,
             state.snake,
             state.food
           ));
@@ -225,7 +235,7 @@ function useSnake({ initialBoardWidth, initialBoardHeight }) {
         gameOver: gameOver,
       };
     } else if (action.type === "reset") {
-      return initialState();
+      return initialState(action.payload);
     }
     throw Error("Unknown action.", action);
   }
@@ -251,13 +261,13 @@ function useSnake({ initialBoardWidth, initialBoardHeight }) {
     };
   }, [startProcessingDirections, stopProcessingDirections]);
 
-  let reset = () => {
+  let reset = (options) => {
     stopProcessingDirections();
     startProcessingDirections();
     directionsRef.current = [];
     document.removeEventListener("keydown", onKeyPress);
     document.addEventListener("keydown", onKeyPress);
-    dispatch({ type: "reset" });
+    dispatch({ type: "reset", payload: options });
   };
 
   return { gameState, reset };
