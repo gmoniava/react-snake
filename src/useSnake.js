@@ -54,7 +54,7 @@ function useSnake({
     return snake;
   };
 
-  let newFoodCoordinates = (currentSnake) => {
+  let createFood = (currentSnake) => {
     let randomFoodCoordinates = () => {
       let x = randomInt(0, boardWidth - 1);
       let y = randomInt(0, boardHeight - 1);
@@ -129,7 +129,7 @@ function useSnake({
     }
 
     if (newHead.x === food.x && newHead.y === food.y) {
-      newFood = newFoodCoordinates([newHead, ...snake]);
+      newFood = createFood([newHead, ...snake]);
       newHead.key = uuidv4();
       return { head: [newHead, currentHead], gameOver, newFood };
     }
@@ -145,7 +145,7 @@ function useSnake({
     let newSnake = createSnakeHorizontally(x, y, length);
     return {
       snake: newSnake,
-      food: newFoodCoordinates(newSnake),
+      food: createFood(newSnake),
     };
   };
 
