@@ -137,7 +137,7 @@ function useSnake({
     return { head: newHead, gameOver, newFood };
   };
 
-  let initialState = ({
+  let createInitialState = ({
     x = initialSnakeX,
     y = initialSnakeY,
     length = initialLength,
@@ -155,16 +155,13 @@ function useSnake({
     }
 
     if (action.type === "move") {
-      let gameOver, newFood, head;
-      let snake = state?.snake?.flatMap((cell, i) => {
+      let gameOver, newFood;
+      let movedSnake = state?.snake?.flatMap((cell, i) => {
         if (i === 0) {
-          // We use this parenthesis for destructuring, since some variables below, were already declared
-          ({ head, gameOver, newFood } = moveHead(
-            action.payload,
-            state.snake,
-            state.food
-          ));
-          return head;
+          let result = moveHead(action.payload, state.snake, state.food);
+          newFood = result.newFood;
+          gameOver = result.gameOver;
+          return result.head;
         } else {
           if (gameOver || newFood) {
             return cell;
@@ -178,12 +175,12 @@ function useSnake({
       });
 
       return {
-        snake,
+        snake: movedSnake,
         food: newFood ? newFood : state.food,
         gameOver: gameOver,
       };
     } else if (action.type === "reset") {
-      return initialState(action.payload);
+      return createInitialState(action.payload);
     }
     throw Error("Unknown action.", action);
   };
@@ -191,7 +188,7 @@ function useSnake({
   const [gameState, dispatch] = React.useReducer(
     reducer,
     undefined,
-    initialState
+    createInitialState
   );
 
   let directionsRef = React.useRef([]);
@@ -221,11 +218,11 @@ function useSnake({
     directionsRef.current.push(newDirection);
   }, []);
 
-  let stopProcessingDirections = React.useCallback(() => {
+  let stopProcessingPressedKeys = React.useCallback(() => {
     clearInterval(timerId.current);
   }, []);
 
-  let startProcessingDirections = React.useCallback(() => {
+  let startProcessingPressedKeys = React.useCallback(() => {
     timerId.current = setInterval(() => {
       let currentDirection;
       if (!directionsRef.current.length) return;
@@ -249,21 +246,21 @@ function useSnake({
 
   React.useEffect(() => {
     if (gameState.gameOver) {
-      stopProcessingDirections();
+      stopProcessingPressedKeys();
       document.removeEventListener("keydown", onKeyPress);
     }
-  }, [gameState, stopProcessingDirections, onKeyPress]);
+  }, [gameState, stopProcessingPressedKeys, onKeyPress]);
 
   React.useEffect(() => {
-    startProcessingDirections();
+    startProcessingPressedKeys();
     return () => {
-      stopProcessingDirections();
+      stopProcessingPressedKeys();
     };
-  }, [startProcessingDirections, stopProcessingDirections]);
+  }, [startProcessingPressedKeys, stopProcessingPressedKeys]);
 
   let reset = (options) => {
-    stopProcessingDirections();
-    startProcessingDirections();
+    stopProcessingPressedKeys();
+    startProcessingPressedKeys();
     directionsRef.current = [];
     document.removeEventListener("keydown", onKeyPress);
     document.addEventListener("keydown", onKeyPress);
