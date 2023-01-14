@@ -19,7 +19,10 @@ let oppositeDirections = {
   [directions.UP]: directions.DOWN,
   [directions.DOWN]: directions.UP,
 };
-
+const GAME_STATUS = {
+  USER_WON: "USER_WON",
+  USER_LOST: "USER_LOST",
+};
 function useSnake({
   initialBoardWidth,
   initialBoardHeight,
@@ -125,7 +128,7 @@ function useSnake({
     }
 
     if (!isValidMove(newHead, snake)) {
-      return { head: currentHead, gameFinished: "USER_LOST" };
+      return { head: currentHead, gameFinished: GAME_STATUS.USER_LOST };
     }
 
     if (newHead.x === food.x && newHead.y === food.y) {
@@ -134,7 +137,7 @@ function useSnake({
         head: [newHead, currentHead],
         gameFinished:
           snake.length === boardWidth * boardHeight - 1
-            ? "USER_WON"
+            ? GAME_STATUS.USER_WON
             : undefined,
         newFood: createFood([newHead, ...snake]),
       };
@@ -184,7 +187,7 @@ function useSnake({
         snake: movedSnake,
         food: newFood
           ? newFood
-          : gameFinished === "USER_WON"
+          : gameFinished === GAME_STATUS.USER_WON
           ? undefined
           : state.food,
         gameFinished: gameFinished,
