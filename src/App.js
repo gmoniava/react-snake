@@ -5,12 +5,13 @@ import useSnake from "./useSnake";
 
 export default function Snake({
   cellWidth = 25,
-  initialBoardWidth = 20,
-  initialBoardHeight = 20,
+  initialBoardWidth = 10,
+  initialBoardHeight = 10,
 }) {
   let { gameState, reset } = useSnake({
     initialBoardWidth: initialBoardWidth,
     initialBoardHeight: initialBoardHeight,
+    initialLength: 6,
   });
 
   return (
@@ -18,8 +19,8 @@ export default function Snake({
       <div
         style={{
           position: "relative",
-          height: initialBoardWidth * cellWidth,
-          width: initialBoardHeight * cellWidth,
+          height: initialBoardHeight * cellWidth,
+          width: initialBoardWidth * cellWidth,
           border: "1px solid gray",
         }}
       >
@@ -38,7 +39,7 @@ export default function Snake({
             ></div>
           );
         })}
-        {gameState.food && (
+        {gameState.food && gameState.gameFinished !== "USER_WON" && (
           <div
             style={{
               position: "absolute",

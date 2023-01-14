@@ -55,6 +55,8 @@ function useSnake({
   };
 
   let createFood = (currentSnake) => {
+    if (currentSnake.length === boardWidth * boardHeight) return;
+
     let randomFoodCoordinates = () => {
       let x = randomInt(0, boardWidth - 1);
       let y = randomInt(0, boardHeight - 1);
@@ -104,7 +106,6 @@ function useSnake({
     let newHead = {
       ...currentHead,
     };
-    let newFood, gameOver;
 
     switch (direction) {
       case directions.RIGHT:
@@ -124,17 +125,22 @@ function useSnake({
     }
 
     if (!isValidMove(newHead, snake)) {
-      gameOver = true;
-      return { head: currentHead, gameOver, newFood };
+      return { head: currentHead, gameFinished: "USER_LOST" };
     }
 
     if (newHead.x === food.x && newHead.y === food.y) {
-      newFood = createFood([newHead, ...snake]);
       newHead.key = uuidv4();
-      return { head: [newHead, currentHead], gameOver, newFood };
+      return {
+        head: [newHead, currentHead],
+        gameFinished:
+          snake.length === boardWidth * boardHeight - 1
+            ? "USER_WON"
+            : undefined,
+        newFood: createFood([newHead, ...snake]),
+      };
     }
 
-    return { head: newHead, gameOver, newFood };
+    return { head: newHead };
   };
 
   let createInitialState = ({
@@ -150,20 +156,20 @@ function useSnake({
   };
 
   let reducer = (state, action) => {
-    if (state.gameOver && action.type !== "reset") {
+    if (state.gameFinished && action.type !== "reset") {
       return state;
     }
 
     if (action.type === "move") {
-      let gameOver, newFood;
+      let gameFinished, newFood;
       let movedSnake = state?.snake?.flatMap((cell, i) => {
         if (i === 0) {
           let result = moveHead(action.payload, state.snake, state.food);
           newFood = result.newFood;
-          gameOver = result.gameOver;
+          gameFinished = result.gameFinished;
           return result.head;
         } else {
-          if (gameOver || newFood) {
+          if (gameFinished || newFood) {
             return cell;
           }
           return {
@@ -177,7 +183,7 @@ function useSnake({
       return {
         snake: movedSnake,
         food: newFood ? newFood : state.food,
-        gameOver: gameOver,
+        gameFinished: gameFinished,
       };
     } else if (action.type === "reset") {
       return createInitialState(action.payload);
@@ -245,7 +251,7 @@ function useSnake({
   }, [onKeyPress]);
 
   React.useEffect(() => {
-    if (gameState.gameOver) {
+    if (gameState.gameFinished) {
       stopProcessingPressedKeys();
       document.removeEventListener("keydown", onKeyPress);
     }
