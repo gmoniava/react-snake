@@ -1,3 +1,3 @@
 ## Snake
 
-Game snake implemented in react. Game logic is handled using a custom hook (useSnake).
+Game snake. Game logic is implemented using a custom hook (useSnake).
