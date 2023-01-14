@@ -182,7 +182,11 @@ function useSnake({
 
       return {
         snake: movedSnake,
-        food: newFood ? newFood : state.food,
+        food: newFood
+          ? newFood
+          : gameFinished === "USER_WON"
+          ? undefined
+          : state.food,
         gameFinished: gameFinished,
       };
     } else if (action.type === "reset") {

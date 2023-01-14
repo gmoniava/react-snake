@@ -13,7 +13,6 @@ export default function Snake({
     initialBoardHeight: initialBoardHeight,
     initialLength: 6,
   });
-
   return (
     <div>
       <div
@@ -39,7 +38,7 @@ export default function Snake({
             ></div>
           );
         })}
-        {gameState.food && gameState.gameFinished !== "USER_WON" && (
+        {gameState.food && (
           <div
             style={{
               position: "absolute",
