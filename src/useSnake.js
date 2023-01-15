@@ -104,7 +104,7 @@ function useSnake({
     return Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
   }
 
-  let moveHead = (direction, snake, food) => {
+  let moveSnakeHead = (direction, snake, food) => {
     let currentHead = snake[0];
     let newHead = {
       ...currentHead,
@@ -167,7 +167,7 @@ function useSnake({
       let gameFinished, food;
       let movedSnake = state?.snake?.flatMap((cell, i) => {
         if (i === 0) {
-          let result = moveHead(action.payload, state.snake, state.food);
+          let result = moveSnakeHead(action.payload, state.snake, state.food);
           food = result.food;
           gameFinished = result.gameFinished;
           return result.head;
