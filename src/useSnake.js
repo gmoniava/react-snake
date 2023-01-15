@@ -128,7 +128,7 @@ function useSnake({
     }
 
     if (!isValidMove(newHead, snake)) {
-      return { head: currentHead, gameFinished: GAME_STATUS.USER_LOST };
+      return { head: currentHead, gameFinished: GAME_STATUS.USER_LOST, food };
     }
 
     if (newHead.x === food.x && newHead.y === food.y) {
@@ -139,11 +139,11 @@ function useSnake({
           snake.length === boardWidth * boardHeight - 1
             ? GAME_STATUS.USER_WON
             : undefined,
-        newFood: createFood([newHead, ...snake]),
+        food: createFood([newHead, ...snake]),
       };
     }
 
-    return { head: newHead };
+    return { head: newHead, food };
   };
 
   let createInitialState = ({
@@ -164,15 +164,15 @@ function useSnake({
     }
 
     if (action.type === "move") {
-      let gameFinished, newFood;
+      let gameFinished, food;
       let movedSnake = state?.snake?.flatMap((cell, i) => {
         if (i === 0) {
           let result = moveHead(action.payload, state.snake, state.food);
-          newFood = result.newFood;
+          food = result.food;
           gameFinished = result.gameFinished;
           return result.head;
         } else {
-          if (gameFinished || newFood) {
+          if (gameFinished || food !== state.food) {
             return cell;
           }
           return {
@@ -185,11 +185,7 @@ function useSnake({
 
       return {
         snake: movedSnake,
-        food: newFood
-          ? newFood
-          : gameFinished === GAME_STATUS.USER_WON
-          ? undefined
-          : state.food,
+        food: food,
         gameFinished: gameFinished,
       };
     } else if (action.type === "reset") {
