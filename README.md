@@ -1,4 +1,3 @@
 ## Snake
 
-Game snake implemented using custom hook.
-
+Game snake implemented using a  custom hook.
