@@ -45,8 +45,8 @@ function useSnake({
 
     let snake = [];
 
-    // In our model, the first element in the array should be head.
-    // Hence, we insert the head first, which in this case is right most cell of the snake.
+    // In our model, the first element in the array should be snake head.
+    // Hence, we insert the head first (which in this case is right most cell of the snake).
     for (let i = length - 1; i >= 0; i--) {
       snake.push({
         x: x + i,
@@ -57,6 +57,7 @@ function useSnake({
     return snake;
   };
 
+  // Generates new food. If there is no space left to place the food, returns undefined.
   let createFood = (currentSnake) => {
     if (currentSnake.length === boardWidth * boardHeight) return;
 
@@ -79,11 +80,13 @@ function useSnake({
     return food;
   };
 
+  // Checks if a cell collised with the otherCells.
   let isCollision = (cell, otherCells) => {
     return !!otherCells.find((elem) => elem.x === cell.x && elem.y === cell.y);
   };
 
-  let isValidMove = (snakeHead, snakeBody) => {
+  // Checks if a given move is valid.
+  let isValidMove = (newHead, snakeBody) => {
     let isCellOutsideBounds = (cell) => {
       return (
         cell.x >= boardWidth ||
@@ -93,59 +96,19 @@ function useSnake({
       );
     };
     return (
-      !isCellOutsideBounds(snakeHead) &&
-      !isCollision(snakeHead, snakeBody.slice(1, snakeBody.length))
+      !isCellOutsideBounds(newHead) &&
+      !isCollision(newHead, snakeBody.slice(1, snakeBody.length))
     );
   };
 
+  // Just generates a random integer
   function randomInt(minInclusinve, maxInclusive) {
     let ceilMin = Math.ceil(minInclusinve),
       floorMax = Math.floor(maxInclusive);
     return Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
   }
 
-  let moveSnakeHead = (direction, snake, food) => {
-    let currentHead = snake[0];
-    let newHead = {
-      ...currentHead,
-    };
-
-    switch (direction) {
-      case directions.RIGHT:
-        newHead.x++;
-        break;
-      case directions.LEFT:
-        newHead.x--;
-        break;
-      case directions.UP:
-        newHead.y--;
-        break;
-      case directions.DOWN:
-        newHead.y++;
-        break;
-      default:
-        throw Error("Unknown direction.", direction);
-    }
-
-    if (!isValidMove(newHead, snake)) {
-      return { head: currentHead, gameFinished: GAME_STATUS.USER_LOST, food };
-    }
-
-    if (newHead.x === food.x && newHead.y === food.y) {
-      newHead.key = uuidv4();
-      return {
-        head: [newHead, currentHead],
-        gameFinished:
-          snake.length === boardWidth * boardHeight - 1
-            ? GAME_STATUS.USER_WON
-            : undefined,
-        food: createFood([newHead, ...snake]),
-      };
-    }
-
-    return { head: newHead, food };
-  };
-
+  // Creates initial game state, i.e. snake and the food.
   let createInitialState = ({
     x = initialSnakeX,
     y = initialSnakeY,
@@ -163,11 +126,58 @@ function useSnake({
       return state;
     }
 
+    // Moves the head of the snake to a given direction.
+    let moveSnakeHead = (direction) => {
+      let currentHead = state.snake[0];
+      let newHead = {
+        ...currentHead,
+      };
+
+      switch (direction) {
+        case directions.RIGHT:
+          newHead.x++;
+          break;
+        case directions.LEFT:
+          newHead.x--;
+          break;
+        case directions.UP:
+          newHead.y--;
+          break;
+        case directions.DOWN:
+          newHead.y++;
+          break;
+        default:
+          throw Error("Unknown direction.", direction);
+      }
+
+      if (!isValidMove(newHead, state.snake)) {
+        return {
+          gameFinished: GAME_STATUS.USER_LOST,
+          head: currentHead,
+          food: state?.food,
+        };
+      }
+
+      if (newHead.x === state?.food.x && newHead.y === state?.food.y) {
+        newHead.key = uuidv4();
+        return {
+          head: [newHead, currentHead],
+          gameFinished:
+            state?.snake.length === boardWidth * boardHeight - 1
+              ? GAME_STATUS.USER_WON
+              : undefined,
+          food: createFood([newHead, ...state?.snake]),
+        };
+      }
+
+      return { head: newHead, food: state?.food };
+    };
+
     if (action.type === "move") {
       let gameFinished, food;
       let movedSnake = state?.snake?.flatMap((cell, i) => {
         if (i === 0) {
-          let result = moveSnakeHead(action.payload, state.snake, state.food);
+          let result = moveSnakeHead(action.payload);
           food = result.food;
           gameFinished = result.gameFinished;
           return result.head;
@@ -185,8 +195,8 @@ function useSnake({
 
       return {
         snake: movedSnake,
-        food: food,
-        gameFinished: gameFinished,
+        food,
+        gameFinished,
       };
     } else if (action.type === "reset") {
       return createInitialState(action.payload);
@@ -194,21 +204,25 @@ function useSnake({
     throw Error("Unknown action.", action);
   };
 
+  // Game state is basically storing the snake coordinates and the food.
   const [gameState, dispatch] = React.useReducer(
     reducer,
     undefined,
     createInitialState
   );
 
+  // Here we store user clicked directions
+  // We use array because we process them one by one if user presses arrow keys too fast.
   let directionsRef = React.useRef([]);
+
   const timerId = React.useRef();
 
   let onKeyPress = React.useCallback((e) => {
-    let newDirection = keyCodesToDirections[e.keyCode];
+    let userPressedDirection = keyCodesToDirections[e.keyCode];
     let currentDirection =
       directionsRef.current[directionsRef.current.length - 1];
 
-    if (newDirection === oppositeDirections[currentDirection]) {
+    if (userPressedDirection === oppositeDirections[currentDirection]) {
       return;
     }
 
@@ -218,13 +232,13 @@ function useSnake({
         directions.LEFT,
         directions.UP,
         directions.DOWN,
-      ].indexOf(newDirection) === -1
+      ].indexOf(userPressedDirection) === -1
     ) {
       console.warn("Wrong directions");
       return;
     }
 
-    directionsRef.current.push(newDirection);
+    directionsRef.current.push(userPressedDirection);
   }, []);
 
   let stopProcessingPressedKeys = React.useCallback(() => {
