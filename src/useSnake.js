@@ -46,7 +46,7 @@ function useSnake({
     let snake = [];
 
     // In our model, the first element in the array should be snake head.
-    // Hence, we insert the head first (which in this case is right most cell of the snake).
+    // Hence, we insert the head first (which in this case is right most cell of the snake on the UI).
     for (let i = length - 1; i >= 0; i--) {
       snake.push({
         x: x + i,
