@@ -80,7 +80,7 @@ function useSnake({
     return food;
   };
 
-  // Checks if a cell collised with the otherCells.
+  // Checks if a cell collides with otherCells.
   let isCollision = (cell, otherCells) => {
     return !!otherCells.find((elem) => elem.x === cell.x && elem.y === cell.y);
   };
