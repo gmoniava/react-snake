@@ -108,7 +108,7 @@ function useSnake({
     return Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
   }
 
-  // Creates initial game state, i.e. snake and the food.
+  // Creates initial game state (snake and the food).
   let createInitialState = ({
     x = initialSnakeX,
     y = initialSnakeY,
