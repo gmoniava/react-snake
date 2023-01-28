@@ -108,7 +108,7 @@ function useSnake({
     return Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
   }
 
-  // Creates initial game state (snake and the food).
+  // Creates initial game state
   let createInitialState = ({
     x = initialSnakeX,
     y = initialSnakeY,
@@ -122,7 +122,7 @@ function useSnake({
   };
 
   let reducer = (state, action) => {
-    if (state.gameFinished && action.type !== "reset") {
+    if (state.gameStatus && action.type !== "reset") {
       return state;
     }
 
@@ -152,7 +152,7 @@ function useSnake({
 
       if (!isValidMove(newHead, state.snake)) {
         return {
-          gameFinished: GAME_STATUS.USER_LOST,
+          gameStatus: GAME_STATUS.USER_LOST,
           head: currentHead,
           food: state?.food,
         };
@@ -162,7 +162,7 @@ function useSnake({
         newHead.key = uuidv4();
         return {
           head: [newHead, currentHead],
-          gameFinished:
+          gameStatus:
             state?.snake.length === boardWidth * boardHeight - 1
               ? GAME_STATUS.USER_WON
               : undefined,
@@ -174,15 +174,15 @@ function useSnake({
     };
 
     if (action.type === "move") {
-      let gameFinished, food;
+      let gameStatus, food;
       let movedSnake = state?.snake?.flatMap((cell, i) => {
         if (i === 0) {
           let result = moveSnakeHead(action.payload);
           food = result.food;
-          gameFinished = result.gameFinished;
+          gameStatus = result.gameStatus;
           return result.head;
         } else {
-          if (gameFinished || food !== state.food) {
+          if (gameStatus || food !== state.food) {
             return cell;
           }
           return {
@@ -196,7 +196,7 @@ function useSnake({
       return {
         snake: movedSnake,
         food,
-        gameFinished,
+        gameStatus,
       };
     } else if (action.type === "reset") {
       return createInitialState(action.payload);
@@ -204,7 +204,6 @@ function useSnake({
     throw Error("Unknown action.", action);
   };
 
-  // Game state is basically storing the snake coordinates and the food.
   const [gameState, dispatch] = React.useReducer(
     reducer,
     undefined,
@@ -268,7 +267,8 @@ function useSnake({
   }, [onKeyPress]);
 
   React.useEffect(() => {
-    if (gameState.gameFinished) {
+    // Truthy gameStatus means user either won or lost
+    if (gameState.gameStatus) {
       stopProcessingPressedKeys();
       document.removeEventListener("keydown", onKeyPress);
     }
