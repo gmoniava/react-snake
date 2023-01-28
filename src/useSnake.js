@@ -58,8 +58,8 @@ function useSnake({
   };
 
   // Generates new food. If there is no space left to place the food, returns undefined.
-  let createFood = (currentSnake) => {
-    if (currentSnake.length === boardWidth * boardHeight) return;
+  let createFood = (snake) => {
+    if (snake.length === boardWidth * boardHeight) return;
 
     let randomFoodCoordinates = () => {
       let x = randomInt(0, boardWidth - 1);
@@ -73,7 +73,7 @@ function useSnake({
 
     let food = randomFoodCoordinates();
 
-    while (isCollision(food, currentSnake)) {
+    while (isCollision(food, snake)) {
       food = randomFoodCoordinates();
     }
 
