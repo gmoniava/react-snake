@@ -33,6 +33,7 @@ function useSnake({
   let [boardWidth] = React.useState(initialBoardWidth);
   let [boardHeight] = React.useState(initialBoardHeight);
 
+  // Creates snake. First element of the returned array is the snake head.
   let createSnakeHorizontally = (x, y, length) => {
     if (
       length < 1 ||
@@ -45,8 +46,6 @@ function useSnake({
 
     let snake = [];
 
-    // In our model, the first element in the array should be snake head.
-    // Hence, we insert the head first (which in this case is right most cell of the snake on the UI).
     for (let i = length - 1; i >= 0; i--) {
       snake.push({
         x: x + i,
@@ -118,11 +117,14 @@ function useSnake({
     return {
       snake: newSnake,
       food: createFood(newSnake),
+      gameStatus: undefined, // undefined here means game didn't start yet or user is playing
     };
   };
 
   let reducer = (state, action) => {
-    if (state.gameStatus && action.type !== "reset") {
+    // This should not happen, but just to make sure.
+    // We can't move if user lost or won
+    if (state.gameStatus && action.type === "move") {
       return state;
     }
 
@@ -175,6 +177,8 @@ function useSnake({
 
     if (action.type === "move") {
       let gameStatus, food;
+
+      // Here we move the snake to some direction.
       let movedSnake = state?.snake?.flatMap((cell, i) => {
         if (i === 0) {
           let result = moveSnakeHead(action.payload);
@@ -267,7 +271,6 @@ function useSnake({
   }, [onKeyPress]);
 
   React.useEffect(() => {
-    // Truthy gameStatus means user either won or lost
     if (gameState.gameStatus) {
       stopProcessingPressedKeys();
       document.removeEventListener("keydown", onKeyPress);
