@@ -279,7 +279,7 @@ function useSnake({
       stopProcessingPressedKeys();
       document.removeEventListener("keydown", onKeyPress);
     }
-  }, [gameState, stopProcessingPressedKeys, onKeyPress]);
+  }, [gameState?.gameStatus, stopProcessingPressedKeys, onKeyPress]);
 
   let reset = (options) => {
     directionsRef.current = [];
