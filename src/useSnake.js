@@ -263,19 +263,25 @@ function useSnake({
     }, 100);
   }, []);
 
-  // Setup listener for key presses, and process which operates on them.
+  // Listen for key presses
   React.useEffect(() => {
     document.addEventListener("keydown", onKeyPress);
-    startProcessingPressedKeys();
     return () => {
       document.removeEventListener("keydown", onKeyPress);
+    };
+  }, [onKeyPress]);
+
+  // Process the pressed keys
+  React.useEffect(() => {
+    startProcessingPressedKeys();
+    return () => {
       stopProcessingPressedKeys();
     };
-  }, [onKeyPress, startProcessingPressedKeys, stopProcessingPressedKeys]);
+  }, [startProcessingPressedKeys, stopProcessingPressedKeys]);
 
   React.useEffect(() => {
     if (gameState.gameStatus) {
-      // If we get here, user lost or won, so we stop the listener for key presses and the process which acts on them.
+      // If we get here, user lost or won, stop listening for key presses and processing them
       stopProcessingPressedKeys();
       document.removeEventListener("keydown", onKeyPress);
     }
