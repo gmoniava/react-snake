@@ -8,11 +8,18 @@ export default function Snake({
   initialBoardWidth = 10,
   initialBoardHeight = 10,
 }) {
-  let { gameState, reset } = useSnake({
+  let { gameState, startGame } = useSnake({
     initialBoardWidth: initialBoardWidth,
     initialBoardHeight: initialBoardHeight,
     initialLength: 6,
   });
+
+  console.log(gameState);
+
+  React.useEffect(() => {
+    startGame();
+  }, []); // eslint-disable-line
+
   return (
     <div>
       <div
@@ -54,7 +61,7 @@ export default function Snake({
       <button
         style={{ marginTop: 10 }}
         onClick={() => {
-          reset();
+          startGame();
         }}
       >
         Reset

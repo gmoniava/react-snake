@@ -22,6 +22,8 @@ let oppositeDirections = {
 const GAME_STATUS = {
   USER_WON: "USER_WON",
   USER_LOST: "USER_LOST",
+  GAME_STARTED: "GAME_STARTED",
+  GAME_NOT_STARTED: "GAME_NOT_STARTED",
 };
 function useSnake({
   initialBoardWidth,
@@ -117,14 +119,15 @@ function useSnake({
     return {
       snake: newSnake,
       food: createFood(newSnake),
-      gameStatus: undefined, // undefined here means game didn't start yet or user is playing
+      gameStatus: GAME_STATUS.GAME_NOT_STARTED,
     };
   };
 
   let reducer = (state, action) => {
-    // This should not happen, but just to make sure.
-    // We can't move if user lost or won
-    if (state.gameStatus && action.type === "move") {
+    if (
+      state.gameStatus !== GAME_STATUS.GAME_STARTED &&
+      action.type === "move"
+    ) {
       return state;
     }
 
@@ -152,7 +155,7 @@ function useSnake({
           throw Error("Unknown direction.", direction);
       }
 
-      if (!isValidMove(newHead, state.snake)) {
+      if (!isValidMove(newHead, state?.snake)) {
         return {
           gameStatus: GAME_STATUS.USER_LOST,
           head: currentHead,
@@ -167,12 +170,16 @@ function useSnake({
           gameStatus:
             state?.snake.length === boardWidth * boardHeight - 1
               ? GAME_STATUS.USER_WON
-              : undefined,
+              : state?.gameStatus,
           food: createFood([newHead, ...state?.snake]),
         };
       }
 
-      return { head: newHead, food: state?.food };
+      return {
+        head: newHead,
+        food: state?.food,
+        gameStatus: state?.gameStatus,
+      };
     };
 
     if (action.type === "move") {
@@ -186,7 +193,11 @@ function useSnake({
           gameStatus = result.gameStatus;
           return result.head;
         } else {
-          if (gameStatus || food !== state.food) {
+          if (
+            gameStatus === GAME_STATUS.USER_WON ||
+            gameStatus === GAME_STATUS.USER_LOST ||
+            food !== state.food
+          ) {
             return cell;
           }
           return {
@@ -202,8 +213,11 @@ function useSnake({
         food,
         gameStatus,
       };
-    } else if (action.type === "reset") {
-      return createInitialState(action.payload);
+    } else if (action.type === "start") {
+      return {
+        ...createInitialState(action.payload),
+        gameStatus: GAME_STATUS.GAME_STARTED,
+      };
     }
     throw Error("Unknown action.", action);
   };
@@ -263,31 +277,18 @@ function useSnake({
     }, 100);
   }, []);
 
-  // Listen for key presses
   React.useEffect(() => {
-    document.addEventListener("keydown", onKeyPress);
-    return () => {
-      document.removeEventListener("keydown", onKeyPress);
-    };
-  }, [onKeyPress]);
-
-  // Process the pressed keys
-  React.useEffect(() => {
-    startProcessingPressedKeys();
-    return () => {
-      stopProcessingPressedKeys();
-    };
-  }, [startProcessingPressedKeys, stopProcessingPressedKeys]);
-
-  React.useEffect(() => {
-    if (gameState.gameStatus) {
-      // If we get here, user lost or won, stop listening for key presses and processing them
+    // If user lost or won, we should stop listening for the key presses and also stop acting on the pressed keys
+    if (
+      gameState?.gameStatus === GAME_STATUS.USER_LOST ||
+      gameState?.gameStatus === GAME_STATUS.USER_WON
+    ) {
       stopProcessingPressedKeys();
       document.removeEventListener("keydown", onKeyPress);
     }
   }, [gameState?.gameStatus, stopProcessingPressedKeys, onKeyPress]);
 
-  let reset = (options) => {
+  let startGame = (options) => {
     directionsRef.current = [];
 
     document.removeEventListener("keydown", onKeyPress);
@@ -296,10 +297,10 @@ function useSnake({
     document.addEventListener("keydown", onKeyPress);
     startProcessingPressedKeys();
 
-    dispatch({ type: "reset", payload: options });
+    dispatch({ type: "start", payload: options });
   };
 
-  return { gameState, reset };
+  return { gameState, startGame };
 }
 
 export default useSnake;
