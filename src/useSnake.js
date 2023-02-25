@@ -128,6 +128,7 @@ function useSnake({
     }
 
     // Moves the head of the snake to a given direction.
+    // Returns the new head, new food (if created), and new game status (if it was changed).
     let moveSnakeHead = (direction) => {
       let currentHead = state.snake[0];
       let newHead = {
@@ -181,7 +182,7 @@ function useSnake({
     if (action.type === "move") {
       let gameStatus, food;
 
-      // Here we move the snake to some direction.
+      // Map current snake to a new one, to reflect single move.
       let movedSnake = state?.snake?.flatMap((cell, i) => {
         if (i === 0) {
           let result = moveSnakeHead(action.payload);
