@@ -14,8 +14,6 @@ export default function Snake({
     initialLength: 6,
   });
 
-  console.log(gameState);
-
   React.useEffect(() => {
     startGame();
   }, []); // eslint-disable-line

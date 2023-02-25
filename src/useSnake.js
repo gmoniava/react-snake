@@ -81,12 +81,10 @@ function useSnake({
     return food;
   };
 
-  // Checks if a cell collides with otherCells.
   let isCollision = (cell, otherCells) => {
     return !!otherCells.find((elem) => elem.x === cell.x && elem.y === cell.y);
   };
 
-  // Checks if a given move is valid.
   let isValidMove = (newHead, snakeBody) => {
     let isCellOutsideBounds = (cell) => {
       return (
@@ -102,14 +100,12 @@ function useSnake({
     );
   };
 
-  // Just generates a random integer
   function randomInt(minInclusinve, maxInclusive) {
     let ceilMin = Math.ceil(minInclusinve),
       floorMax = Math.floor(maxInclusive);
     return Math.floor(Math.random() * (floorMax - ceilMin + 1)) + ceilMin;
   }
 
-  // Creates initial game state
   let createInitialState = ({
     x = initialSnakeX,
     y = initialSnakeY,
